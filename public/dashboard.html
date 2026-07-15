@@ -8,14 +8,7 @@
 </head>
 <body>
 
-<header class="topbar">
-  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
-  <nav class="tabs">
-    <a href="index.html">Crear Ticket</a>
-    <a href="admin.html">Panel Agentes</a>
-    <a href="dashboard.html" class="activo">Dashboard</a>
-  </nav>
-</header>
+<div id="topbar-container"></div>
 
 <main>
   <h1>Dashboard de métricas</h1>
@@ -34,8 +27,15 @@
   </div>
 </main>
 
+<script src="auth.js"></script>
 <script src="script.js"></script>
 <script>
+const usuario = protegerPagina(['gerente']);
+if (usuario) {
+  renderTopbar('dashboard.html');
+  cargarMetricas();
+}
+
 function renderBarras(contenedorId, datos, total) {
   const cont = document.getElementById(contenedorId);
   const entradas = Object.entries(datos);
@@ -73,7 +73,6 @@ async function cargarMetricas() {
   }
 }
 
-cargarMetricas();
 </script>
 
 </body>

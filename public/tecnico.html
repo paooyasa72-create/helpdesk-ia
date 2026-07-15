@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente — Bandeja del Técnico</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="topbar-container"></div>
+
+<main>
+  <h1>Bandeja de tickets</h1>
+  <p class="subtitulo">Tickets abiertos y en proceso. Tómalos, clasifícalos con IA y responde al empleado.</p>
+
+  <div class="panel" id="listaCola">
+    <p class="vacio">Cargando...</p>
+  </div>
+</main>
+
+<script src="auth.js"></script>
+<script src="script.js"></script>
+<script>
+const usuario = protegerPagina(['tecnico']);
+if (usuario) {
+  renderTopbar('tecnico.html');
+  cargarCola();
+}
+
+async function cargarCola() {
+  const cont = document.getElementById('listaCola');
+  try {
+    const tickets = await authFetch('/api/tickets/cola');
+    if (tickets.length === 0) {
+      cont.innerHTML = '<p class="vacio">🎉 No hay tickets pendientes en este momento.</p>';
+      return;
+    }
+
+    cont.innerHTML = tickets.map(t => `
+      <div class="ticket-card">
+        <div class="fila-top">
+          <h3>${t.titulo}</h3>
+          <span class="badge ${t.clasificacion?.prioridad || t.prioridad}">${t.clasificacion?.prioridad || t.prioridad}</span>
+        </div>
+        <p class="desc">${t.descripcion}</p>
+        <p style="font-size:0.8rem; color:var(--texto-tenue);">
+          De: ${t.creadoPorNombre || t.email} · Estado: <b>${t.estado}</b> · Creado: ${formatoFecha(t.creado)}
+          ${t.tecnicoNombre ? `· Asignado a: <b>${t.tecnicoNombre}</b>` : ''}
+          ${t.clasificacion ? `· Categoría IA: <b>${t.clasificacion.categoria}</b>` : ''}
+        </p>
+        ${t.mensajes && t.mensajes.length > 0 ? `
+          <div class="hilo-mensajes">
+            ${t.mensajes.map(m => `
+              <div class="mensaje-item">
+                <div class="meta">${m.autor} (${m.rol}) · ${formatoFecha(m.fecha)}</div>
+                ${m.texto}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="acciones">
+          <button onclick="tomarTicket('${t._id}')">📌 Tomar ticket</button>
+          <button class="btn-secundario" onclick="clasificar('${t._id}')">🤖 Clasificar con IA</button>
+          <button class="btn-secundario" onclick="cerrarTicket('${t._id}')">✅ Marcar como cerrado</button>
+        </div>
+        <div class="acciones">
+          <input type="text" placeholder="Responder al empleado..." id="msg-${t._id}" style="flex:1; min-width:180px;">
+          <button class="btn-secundario" onclick="responder('${t._id}')">Enviar respuesta</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    cont.innerHTML = `<p class="vacio">❌ ${err.message}</p>`;
+  }
+}
+
+async function tomarTicket(id) {
+  try {
+    await authFetch(`/api/tickets/${id}/asignar`, { method: 'PUT' });
+    cargarCola();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function clasificar(id) {
+  try {
+    const data = await authFetch('/api/agent/triage', { method: 'POST', body: JSON.stringify({ ticketId: id }) });
+    alert(`Clasificado: ${data.clasificacion.prioridad} / ${data.clasificacion.categoria}` + (data.trelloUrl ? `\nTarjeta Trello: ${data.trelloUrl}` : ''));
+    cargarCola();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function cerrarTicket(id) {
+  try {
+    await authFetch(`/api/tickets/${id}`, { method: 'PUT', body: JSON.stringify({ estado: 'cerrado' }) });
+    cargarCola();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function responder(id) {
+  const input = document.getElementById(`msg-${id}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  try {
+    await authFetch(`/api/tickets/${id}/mensajes`, { method: 'POST', body: JSON.stringify({ texto }) });
+    input.value = '';
+    cargarCola();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>

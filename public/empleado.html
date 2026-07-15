@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente — Mis Tickets</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="topbar-container"></div>
+
+<main>
+  <h1>Crear un ticket de soporte</h1>
+  <p class="subtitulo">Describe tu problema. Si es urgente, el agente de IA lo clasificará automáticamente.</p>
+
+  <div class="panel">
+    <form id="formTicket">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" placeholder="Ej: No puedo acceder al sistema" required>
+
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" placeholder="Describe el problema con el mayor detalle posible" required></textarea>
+
+      <label for="prioridad">Prioridad</label>
+      <select id="prioridad">
+        <option value="normal">Normal</option>
+        <option value="baja">Baja</option>
+        <option value="alta">Alta</option>
+        <option value="urgente">Urgente</option>
+      </select>
+
+      <button type="submit" id="btnEnviar">🚀 Enviar Ticket</button>
+    </form>
+    <div class="mensaje" id="mensajeCrear"></div>
+  </div>
+
+  <h1 style="margin-top:36px;">Mis tickets</h1>
+  <p class="subtitulo">Aquí puedes ver el estado y las respuestas del técnico.</p>
+  <div class="panel" id="listaMisTickets">
+    <p class="vacio">Cargando...</p>
+  </div>
+</main>
+
+<script src="auth.js"></script>
+<script src="script.js"></script>
+<script>
+const usuario = protegerPagina(['empleado']);
+if (usuario) {
+  renderTopbar('empleado.html');
+  cargarMisTickets();
+}
+
+document.getElementById('formTicket').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnviar');
+  const msg = document.getElementById('mensajeCrear');
+
+  const payload = {
+    titulo: document.getElementById('titulo').value,
+    descripcion: document.getElementById('descripcion').value,
+    prioridad: document.getElementById('prioridad').value
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  msg.className = 'mensaje';
+
+  try {
+    const data = await authFetch('/api/tickets', { method: 'POST', body: JSON.stringify(payload) });
+    msg.className = 'mensaje exito';
+    let html = `✅ ${data.mensaje}`;
+    if (data.clasificacion) {
+      html += `<br>Prioridad confirmada por IA: <span class="badge ${data.clasificacion.prioridad}">${data.clasificacion.prioridad}</span> · Categoría: <b>${data.clasificacion.categoria}</b>`;
+    }
+    if (data.trello) {
+      html += `<br>📋 Tarjeta creada en Trello: <a class="trello-link" href="${data.trello}" target="_blank">${data.trello}</a>`;
+    }
+    msg.innerHTML = html;
+    e.target.reset();
+    cargarMisTickets();
+  } catch (err) {
+    msg.className = 'mensaje error';
+    msg.textContent = '❌ ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Enviar Ticket';
+  }
+});
+
+async function cargarMisTickets() {
+  const cont = document.getElementById('listaMisTickets');
+  try {
+    const tickets = await authFetch('/api/tickets/mine');
+    if (tickets.length === 0) {
+      cont.innerHTML = '<p class="vacio">Todavía no has creado ningún ticket.</p>';
+      return;
+    }
+
+    cont.innerHTML = tickets.map(t => `
+      <div class="ticket-card">
+        <div class="fila-top">
+          <h3>${t.titulo}</h3>
+          <span class="badge ${t.clasificacion?.prioridad || t.prioridad}">${t.clasificacion?.prioridad || t.prioridad}</span>
+        </div>
+        <p class="desc">${t.descripcion}</p>
+        <p style="font-size:0.8rem; color:var(--texto-tenue);">Estado: <b>${t.estado}</b> · Creado: ${formatoFecha(t.creado)}</p>
+        ${t.mensajes && t.mensajes.length > 0 ? `
+          <div class="hilo-mensajes">
+            ${t.mensajes.map(m => `
+              <div class="mensaje-item">
+                <div class="meta">${m.autor} (${m.rol}) · ${formatoFecha(m.fecha)}</div>
+                ${m.texto}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <div class="acciones">
+          <input type="text" placeholder="Escribe un mensaje..." id="msg-${t._id}" style="flex:1; min-width:180px;">
+          <button class="btn-secundario" onclick="enviarMensaje('${t._id}')">Enviar mensaje</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    cont.innerHTML = `<p class="vacio">❌ ${err.message}</p>`;
+  }
+}
+
+async function enviarMensaje(ticketId) {
+  const input = document.getElementById(`msg-${ticketId}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  try {
+    await authFetch(`/api/tickets/${ticketId}/mensajes`, { method: 'POST', body: JSON.stringify({ texto }) });
+    input.value = '';
+    cargarMisTickets();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+</script>
+
+</body>
+</html>

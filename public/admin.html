@@ -8,14 +8,7 @@
 </head>
 <body>
 
-<header class="topbar">
-  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
-  <nav class="tabs">
-    <a href="index.html">Crear Ticket</a>
-    <a href="admin.html" class="activo">Panel Agentes</a>
-    <a href="dashboard.html">Dashboard</a>
-  </nav>
-</header>
+<div id="topbar-container"></div>
 
 <main>
   <h1>Panel de agentes</h1>
@@ -28,8 +21,15 @@
   </div>
 </main>
 
+<script src="auth.js"></script>
 <script src="script.js"></script>
 <script>
+const usuario = protegerPagina(['gerente']);
+if (usuario) {
+  renderTopbar('admin.html');
+  cargarTickets();
+}
+
 async function cargarTickets() {
   const contenedor = document.getElementById('contenedorTabla');
   try {
@@ -89,7 +89,6 @@ async function ejecutarIA(id) {
   }
 }
 
-cargarTickets();
 </script>
 
 </body>
