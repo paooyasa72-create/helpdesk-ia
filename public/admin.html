@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente — Panel de Agentes</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
+  <nav class="tabs">
+    <a href="index.html">Crear Ticket</a>
+    <a href="admin.html" class="activo">Panel Agentes</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Panel de agentes</h1>
+  <p class="subtitulo">Gestiona los tickets, dispara la clasificación del agente de IA y actualiza su estado.</p>
+
+  <div class="panel">
+    <div id="contenedorTabla">
+      <p class="vacio">Cargando tickets...</p>
+    </div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+<script>
+async function cargarTickets() {
+  const contenedor = document.getElementById('contenedorTabla');
+  try {
+    const tickets = await listarTickets();
+    if (tickets.length === 0) {
+      contenedor.innerHTML = '<p class="vacio">Todavía no hay tickets. Crea uno desde la pestaña "Crear Ticket".</p>';
+      return;
+    }
+
+    let filas = tickets.map(t => `
+      <tr>
+        <td>${t.titulo}<br><span style="color:var(--texto-tenue); font-size:0.78rem;">${t.email}</span></td>
+        <td><span class="badge ${t.clasificacion?.prioridad || t.prioridad}">${t.clasificacion?.prioridad || t.prioridad}</span></td>
+        <td>${t.clasificacion?.categoria || '—'}</td>
+        <td>
+          <select onchange="cambiarEstado('${t._id}', this.value)">
+            <option value="abierto" ${t.estado === 'abierto' ? 'selected' : ''}>Abierto</option>
+            <option value="en_proceso" ${t.estado === 'en_proceso' ? 'selected' : ''}>En proceso</option>
+            <option value="cerrado" ${t.estado === 'cerrado' ? 'selected' : ''}>Cerrado</option>
+          </select>
+        </td>
+        <td>${formatoFecha(t.creado)}</td>
+        <td>
+          <button style="margin:0; padding:6px 10px; font-size:0.78rem;" onclick="ejecutarIA('${t._id}')">🤖 Clasificar</button>
+        </td>
+      </tr>
+    `).join('');
+
+    contenedor.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>Ticket</th><th>Prioridad</th><th>Categoría</th><th>Estado</th><th>Creado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+    `;
+  } catch (err) {
+    contenedor.innerHTML = `<p class="vacio">❌ ${err.message}</p>`;
+  }
+}
+
+async function cambiarEstado(id, estado) {
+  try {
+    await actualizarTicket(id, { estado });
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function ejecutarIA(id) {
+  try {
+    const data = await clasificarConIA(id);
+    alert(`Clasificado: ${data.clasificacion.prioridad} / ${data.clasificacion.categoria}` + (data.trelloUrl ? `\nTarjeta Trello: ${data.trelloUrl}` : ''));
+    cargarTickets();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+cargarTickets();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente — Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
+  <nav class="tabs">
+    <a href="index.html">Crear Ticket</a>
+    <a href="admin.html">Panel Agentes</a>
+    <a href="dashboard.html" class="activo">Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Dashboard de métricas</h1>
+  <p class="subtitulo">Vista general del volumen y clasificación de tickets.</p>
+
+  <div class="stat-grid" id="statGrid"></div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;">Por prioridad</h3>
+    <div id="graficoPrioridad"></div>
+  </div>
+
+  <div class="panel">
+    <h3 style="margin-top:0;">Por categoría</h3>
+    <div id="graficoCategoria"></div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+<script>
+function renderBarras(contenedorId, datos, total) {
+  const cont = document.getElementById(contenedorId);
+  const entradas = Object.entries(datos);
+  if (entradas.length === 0) {
+    cont.innerHTML = '<p class="vacio">Sin datos todavía</p>';
+    return;
+  }
+  cont.innerHTML = entradas.map(([clave, valor]) => {
+    const pct = total > 0 ? Math.round((valor / total) * 100) : 0;
+    return `
+      <div class="barra-fila">
+        <div class="top"><span>${clave}</span><span>${valor} (${pct}%)</span></div>
+        <div class="barra-track"><div class="barra-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function cargarMetricas() {
+  try {
+    const m = await obtenerMetricas();
+    const abiertos = m.porEstado.abierto || 0;
+    const cerrados = m.porEstado.cerrado || 0;
+
+    document.getElementById('statGrid').innerHTML = `
+      <div class="stat"><div class="num">${m.total}</div><div class="lbl">Tickets totales</div></div>
+      <div class="stat"><div class="num">${abiertos}</div><div class="lbl">Abiertos</div></div>
+      <div class="stat"><div class="num">${cerrados}</div><div class="lbl">Cerrados</div></div>
+    `;
+
+    renderBarras('graficoPrioridad', m.porPrioridad, m.total);
+    renderBarras('graficoCategoria', m.porCategoria, m.total);
+  } catch (err) {
+    document.getElementById('statGrid').innerHTML = `<p class="vacio">❌ ${err.message}</p>`;
+  }
+}
+
+cargarMetricas();
+</script>
+
+</body>
+</html>

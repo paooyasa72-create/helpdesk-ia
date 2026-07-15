@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente — Crear Ticket</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
+  <nav class="tabs">
+    <a href="index.html" class="activo">Crear Ticket</a>
+    <a href="admin.html">Panel Agentes</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Crear un ticket de soporte</h1>
+  <p class="subtitulo">Describe tu problema. Si es urgente, un agente de IA lo clasificará y notificará al equipo automáticamente.</p>
+
+  <div class="panel">
+    <form id="formTicket">
+      <label for="titulo">Título</label>
+      <input type="text" id="titulo" placeholder="Ej: No puedo acceder al sistema" required>
+
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" placeholder="Describe el problema con el mayor detalle posible" required></textarea>
+
+      <label for="prioridad">Prioridad</label>
+      <select id="prioridad">
+        <option value="normal">Normal</option>
+        <option value="baja">Baja</option>
+        <option value="alta">Alta</option>
+        <option value="urgente">Urgente</option>
+      </select>
+
+      <label for="email">Tu correo</label>
+      <input type="email" id="email" placeholder="tu@correo.com" required>
+
+      <button type="submit" id="btnEnviar">🚀 Enviar Ticket</button>
+    </form>
+
+    <div class="mensaje" id="mensaje"></div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+<script>
+document.getElementById('formTicket').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnEnviar');
+  const msg = document.getElementById('mensaje');
+
+  const payload = {
+    titulo: document.getElementById('titulo').value,
+    descripcion: document.getElementById('descripcion').value,
+    prioridad: document.getElementById('prioridad').value,
+    email: document.getElementById('email').value
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  msg.className = 'mensaje';
+
+  try {
+    const data = await crearTicket(payload);
+    msg.className = 'mensaje exito';
+    let html = `✅ ${data.mensaje}`;
+    if (data.clasificacion) {
+      html += `<br>Prioridad confirmada por IA: <span class="badge ${data.clasificacion.prioridad}">${data.clasificacion.prioridad}</span> · Categoría: <b>${data.clasificacion.categoria}</b>`;
+    }
+    if (data.trello) {
+      html += `<br>📋 Tarjeta creada en Trello: <a class="trello-link" href="${data.trello}" target="_blank">${data.trello}</a>`;
+    }
+    msg.innerHTML = html;
+    e.target.reset();
+  } catch (err) {
+    msg.className = 'mensaje error';
+    msg.textContent = '❌ ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Enviar Ticket';
+  }
+});
+</script>
+
+</body>
+</html>

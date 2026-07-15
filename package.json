@@ -1,0 +1,17 @@
+{
+  "name": "helpdesk-ia",
+  "version": "1.0.0",
+  "description": "Help Desk Inteligente con Agente de IA (100% Cloud-Native)",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongodb": "^6.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "node-fetch": "^2.7.0"
+  }
+}
