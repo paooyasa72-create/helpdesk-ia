@@ -35,8 +35,13 @@
     <div class="mensaje" id="mensajeCrear"></div>
   </div>
 
-  <h1 style="margin-top:36px;">Mis tickets</h1>
-  <p class="subtitulo">Aquí puedes ver el estado y las respuestas del técnico.</p>
+  <div class="fila-top" style="display:flex; justify-content:space-between; align-items:center; margin-top:36px;">
+    <div>
+      <h1 style="margin-bottom:4px;">Mis tickets</h1>
+      <p class="subtitulo" style="margin-bottom:0;">Aquí puedes ver el estado y las respuestas del técnico.</p>
+    </div>
+    <button id="btnActualizar" style="margin:0;" onclick="cargarMisTickets()">🔄 Actualizar Mis Tickets</button>
+  </div>
   <div class="panel" id="listaMisTickets">
     <p class="vacio">Cargando...</p>
   </div>
@@ -90,14 +95,21 @@ document.getElementById('formTicket').addEventListener('submit', async (e) => {
 
 async function cargarMisTickets() {
   const cont = document.getElementById('listaMisTickets');
+  cont.innerHTML = '<p class="vacio">Cargando...</p>';
   try {
     const tickets = await authFetch('/api/tickets/mine');
+    console.log('Mis tickets:', tickets);
+
     if (tickets.length === 0) {
       cont.innerHTML = '<p class="vacio">Todavía no has creado ningún ticket.</p>';
       return;
     }
 
-    cont.innerHTML = tickets.map(t => `
+    cont.innerHTML = tickets.map(t => {
+      const respuestasTecnico = (t.mensajes || []).filter(m => m.rol === 'tecnico' || m.rol === 'gerente');
+      const misMensajes = (t.mensajes || []).filter(m => m.rol === 'empleado');
+
+      return `
       <div class="ticket-card">
         <div class="fila-top">
           <h3>${t.titulo}</h3>
@@ -105,23 +117,41 @@ async function cargarMisTickets() {
         </div>
         <p class="desc">${t.descripcion}</p>
         <p style="font-size:0.8rem; color:var(--texto-tenue);">Estado: <b>${t.estado}</b> · Creado: ${formatoFecha(t.creado)}</p>
-        ${t.mensajes && t.mensajes.length > 0 ? `
-          <div class="hilo-mensajes">
-            ${t.mensajes.map(m => `
+
+        ${respuestasTecnico.length > 0 ? `
+          <div style="margin-top:12px;">
+            <p style="font-size:0.78rem; color:var(--ambar); font-weight:700; text-transform:uppercase; margin-bottom:6px;">💬 Respuesta del técnico</p>
+            <div class="hilo-mensajes">
+              ${respuestasTecnico.map(m => `
+                <div class="mensaje-item" style="border-color: var(--ambar);">
+                  <div class="meta">${m.autor} · ${formatoFecha(m.fecha)}</div>
+                  ${m.texto}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : `<p style="font-size:0.8rem; color:var(--texto-tenue); margin-top:10px;">Todavía no hay respuesta del técnico.</p>`}
+
+        ${misMensajes.length > 0 ? `
+          <div class="hilo-mensajes" style="margin-top:8px;">
+            ${misMensajes.map(m => `
               <div class="mensaje-item">
-                <div class="meta">${m.autor} (${m.rol}) · ${formatoFecha(m.fecha)}</div>
+                <div class="meta">Tú · ${formatoFecha(m.fecha)}</div>
                 ${m.texto}
               </div>
             `).join('')}
           </div>
         ` : ''}
+
         <div class="acciones">
-          <input type="text" placeholder="Escribe un mensaje..." id="msg-${t._id}" style="flex:1; min-width:180px;">
+          <input type="text" placeholder="Escribe un mensaje al técnico..." id="msg-${t._id}" style="flex:1; min-width:180px;">
           <button class="btn-secundario" onclick="enviarMensaje('${t._id}')">Enviar mensaje</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   } catch (err) {
+    console.error('Error al cargar mis tickets:', err);
     cont.innerHTML = `<p class="vacio">❌ ${err.message}</p>`;
   }
 }
@@ -136,6 +166,7 @@ async function enviarMensaje(ticketId) {
     input.value = '';
     cargarMisTickets();
   } catch (err) {
+    console.error('Error al enviar mensaje:', err);
     alert('Error: ' + err.message);
   }
 }
