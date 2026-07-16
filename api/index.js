@@ -125,7 +125,7 @@ app.get('/api/tickets/cola', requireAuth(['tecnico', 'gerente']), async (req, re
     const db = await connectDB();
     const tickets = await db.collection('tickets')
       .find({ estado: { $in: ['abierto', 'en_proceso'] } })
-      .sort({ creado: 1 })
+      .sort({ creado: -1 })
       .toArray();
     res.json(tickets);
   } catch (err) {
