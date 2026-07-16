@@ -318,3 +318,54 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .ticket-card .acciones { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .ticket-card .acciones button { margin: 0; padding: 7px 12px; font-size: 0.78rem; }
 .btn-secundario { background: transparent; border: 1px solid var(--azul-borde); color: var(--texto); }
+
+/* Formulario "estilo terminal" para crear ticket */
+.terminal-box {
+  font-family: 'Courier New', Courier, monospace;
+  background: var(--azul-noche);
+  border: 1px dashed var(--azul-borde);
+  border-radius: 4px;
+  padding: 20px 24px;
+  max-width: 460px;
+}
+
+.terminal-box .terminal-header {
+  color: var(--ambar);
+  font-weight: 700;
+  font-size: 1rem;
+  border-bottom: 1px dashed var(--azul-borde);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.terminal-box label {
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--texto);
+  font-size: 0.9rem;
+  margin-top: 14px;
+}
+
+.terminal-box input,
+.terminal-box textarea,
+.terminal-box select {
+  font-family: 'Courier New', Courier, monospace;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dotted var(--azul-borde);
+  border-radius: 0;
+  padding: 6px 2px;
+  color: var(--texto);
+}
+
+.terminal-box input:focus,
+.terminal-box textarea:focus,
+.terminal-box select:focus {
+  outline: none;
+  border-bottom: 1px solid var(--ambar);
+}
+
+.terminal-box button {
+  font-family: 'Courier New', Courier, monospace;
+  width: 100%;
+  margin-top: 22px;
+}

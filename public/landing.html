@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help Desk Inteligente en la Nube</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero {
+    text-align: center;
+    padding: 64px 24px 40px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: 2.1rem;
+    margin-bottom: 12px;
+  }
+  .hero p.lead {
+    color: var(--texto-tenue);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+  .hero-botones {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .hero-botones a {
+    text-decoration: none;
+  }
+  .btn-ghost {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 6px;
+    border: 1px solid var(--azul-borde);
+    color: var(--texto);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .btn-ghost:hover { border-color: var(--ambar); }
+  .btn-relleno {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 6px;
+    background: var(--ambar);
+    color: #1a1200;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+  .feature {
+    background: var(--azul-panel);
+    border: 1px solid var(--azul-borde);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+  }
+  .feature .emoji { font-size: 1.8rem; margin-bottom: 8px; }
+  .feature h3 { font-size: 0.95rem; margin: 0 0 6px; }
+  .feature p { font-size: 0.8rem; color: var(--texto-tenue); margin: 0; }
+
+  .flujo-wrap {
+    max-width: 900px;
+    margin: 48px auto;
+    padding: 0 24px;
+  }
+  .flujo-wrap h2 { text-align: center; margin-bottom: 24px; }
+  .flujo-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .flujo-lista li {
+    background: var(--azul-panel);
+    border: 1px solid var(--azul-borde);
+    border-left: 3px solid var(--ambar);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="marca"><span class="foco"></span> Help Desk Inteligente</div>
+  <nav class="tabs">
+    <a href="login.html">Iniciar sesión</a>
+    <a href="registro.html">Crear cuenta</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Help Desk Inteligente en la Nube</h1>
+  <p class="lead">Los usuarios crean tickets. La IA los clasifica. Todo gratis y en la nube.</p>
+  <div class="hero-botones">
+    <a href="registro.html" class="btn-relleno">Crear cuenta</a>
+    <a href="login.html" class="btn-ghost">Iniciar sesión</a>
+  </div>
+</section>
+
+<div class="feature-grid">
+  <div class="feature">
+    <div class="emoji">🎫</div>
+    <h3>Tickets</h3>
+    <p>Usuarios crean y rastrean solicitudes de soporte</p>
+  </div>
+  <div class="feature">
+    <div class="emoji">🤖</div>
+    <h3>IA Automática</h3>
+    <p>Gemini clasifica y prioriza cada ticket</p>
+  </div>
+  <div class="feature">
+    <div class="emoji">☁️</div>
+    <h3>100% Cloud</h3>
+    <p>Sin servidores propios — todo en la nube</p>
+  </div>
+  <div class="feature">
+    <div class="emoji">💸</div>
+    <h3>Costo cero</h3>
+    <p>Todos los servicios usados tienen nivel gratuito</p>
+  </div>
+</div>
+
+<div class="flujo-wrap">
+  <h2>¿Cómo funciona el agente de IA?</h2>
+  <ol class="flujo-lista">
+    <li>📥 <b>Recibe las notas (tickets)</b> — el empleado describe su problema y lo envía</li>
+    <li>🧠 <b>Las lee automáticamente</b> — Gemini entiende el título y la descripción</li>
+    <li>🚦 <b>Las clasifica por importancia</b> — decide si es baja, media, alta o crítica</li>
+    <li>📋 <b>Las envía a la persona adecuada</b> — si es urgente, crea una tarjeta en Trello y notifica por correo</li>
+    <li>💬 <b>¡Y hasta responde las preguntas fáciles solito!</b> — si es una pregunta frecuente, contesta por correo y cierra el ticket sin esperar a un técnico</li>
+  </ol>
+</div>
+
+</body>
+</html>

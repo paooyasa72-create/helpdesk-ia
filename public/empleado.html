@@ -12,22 +12,23 @@
 
 <main>
   <h1>Crear un ticket de soporte</h1>
-  <p class="subtitulo">Describe tu problema. Si es urgente, el agente de IA lo clasificará automáticamente.</p>
+  <p class="subtitulo">Usuarios crean y rastrean solicitudes de soporte. Gemini clasifica y prioriza cada ticket — y hasta responde las preguntas fáciles solito.</p>
 
-  <div class="panel">
+  <div class="panel terminal-box">
+    <div class="terminal-header">📝 CREAR TICKET</div>
     <form id="formTicket">
-      <label for="titulo">Título</label>
-      <input type="text" id="titulo" placeholder="Ej: No puedo acceder al sistema" required>
+      <label for="titulo">Título:</label>
+      <input type="text" id="titulo" placeholder="________________" required>
 
-      <label for="descripcion">Descripción</label>
-      <textarea id="descripcion" placeholder="Describe el problema con el mayor detalle posible" required></textarea>
+      <label for="descripcion">Descripción:</label>
+      <textarea id="descripcion" placeholder="________________" required></textarea>
 
-      <label for="prioridad">Prioridad</label>
+      <label for="prioridad">Prioridad:</label>
       <select id="prioridad">
-        <option value="normal">Normal</option>
-        <option value="baja">Baja</option>
-        <option value="alta">Alta</option>
-        <option value="urgente">Urgente</option>
+        <option value="normal">[Normal ▾]</option>
+        <option value="baja">[Baja ▾]</option>
+        <option value="alta">[Alta ▾]</option>
+        <option value="urgente">[Urgente ▾]</option>
       </select>
 
       <button type="submit" id="btnEnviar">🚀 Enviar Ticket</button>

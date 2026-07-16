@@ -6,7 +6,7 @@ const { ObjectId } = require('mongodb');
 const { connectDB } = require('../lib/db');
 const { classifyTicket } = require('../lib/gemini');
 const { createTrelloCard } = require('../lib/trello');
-const { enviarNotificacionUrgente } = require('../lib/email');
+const { enviarNotificacionUrgente, enviarRespuestaFAQ } = require('../lib/email');
 const { hashPassword, comparePassword, signToken, requireAuth } = require('../lib/auth');
 
 const app = express();
@@ -192,37 +192,58 @@ app.post('/api/tickets', requireAuth(), async (req, res) => {
 
     let respuesta = { mensaje: 'Ticket creado exitosamente', ticket: nuevoTicket };
 
-    const esUrgente = ['urgente', 'alta', 'critica'].includes((prioridad || '').toLowerCase());
-
-    if (esUrgente && process.env.GEMINI_API_KEY) {
+    // El agente de IA (Gemini) actúa como un "recepcionista": lee TODOS los
+    // tickets que llegan, no solo los urgentes, y decide qué hacer con cada uno.
+    if (process.env.GEMINI_API_KEY) {
       try {
         const clasificacion = await classifyTicket(titulo, descripcion);
         const update = { clasificacion };
 
-        if (clasificacion.escalar && process.env.TRELLO_API_KEY) {
-          const trelloUrl = await createTrelloCard(nuevoTicket, clasificacion);
-          update.trelloUrl = trelloUrl;
-          respuesta.trello = trelloUrl;
-          nuevoTicket.trelloUrl = trelloUrl;
+        // Caso: es una pregunta frecuente -> Gemini ya trae la respuesta,
+        // se la mandamos por correo al usuario y cerramos el ticket solo.
+        if (clasificacion.es_pregunta_frecuente && clasificacion.respuesta_sugerida) {
+          update.estado = 'cerrado';
+          respuesta.mensaje = 'Es una pregunta frecuente: el agente de IA respondió automáticamente y cerró el ticket';
+          respuesta.respuestaSugerida = clasificacion.respuesta_sugerida;
+
+          if (process.env.EMAIL_USER) {
+            try {
+              await enviarRespuestaFAQ(nuevoTicket, clasificacion.respuesta_sugerida);
+              respuesta.respuestaAutomaticaEnviada = true;
+            } catch (emailErr) {
+              respuesta.avisoEmail = `No se pudo enviar la respuesta automática por correo: ${emailErr.message}`;
+            }
+          }
+        } else {
+          // Caso: no es pregunta frecuente. Si Gemini decide escalar (prioridad
+          // alta/crítica), se crea la tarjeta en Trello y se notifica por correo.
+          if (clasificacion.escalar && process.env.TRELLO_API_KEY) {
+            const trelloUrl = await createTrelloCard(nuevoTicket, clasificacion);
+            update.trelloUrl = trelloUrl;
+            respuesta.trello = trelloUrl;
+            nuevoTicket.trelloUrl = trelloUrl;
+          }
+
+          if (clasificacion.escalar && process.env.EMAIL_USER) {
+            try {
+              await enviarNotificacionUrgente(nuevoTicket, clasificacion);
+              respuesta.notificacionEnviada = true;
+            } catch (emailErr) {
+              respuesta.avisoEmail = `No se pudo enviar la notificación por correo: ${emailErr.message}`;
+            }
+          }
+
+          respuesta.mensaje = 'Ticket creado y clasificado automáticamente por el agente de IA';
         }
 
         await db.collection('tickets').updateOne({ _id: nuevoTicket._id }, { $set: update });
         respuesta.clasificacion = clasificacion;
-        respuesta.mensaje = 'Ticket creado y clasificado automáticamente por el agente de IA';
-
-        if (process.env.EMAIL_USER) {
-          try {
-            await enviarNotificacionUrgente(nuevoTicket, clasificacion);
-            respuesta.notificacionEnviada = true;
-          } catch (emailErr) {
-            respuesta.avisoEmail = `No se pudo enviar la notificación por correo: ${emailErr.message}`;
-          }
-        }
       } catch (aiErr) {
         respuesta.avisoIA = `El ticket se guardó pero el agente de IA falló: ${aiErr.message}`;
 
-        // Aunque falle la IA, si el ticket ya venía marcado como urgente, igual notificamos.
-        if (process.env.EMAIL_USER) {
+        // Aunque falle la IA, si el usuario ya marcó el ticket como urgente, igual notificamos.
+        const esUrgente = ['urgente', 'alta', 'critica'].includes((prioridad || '').toLowerCase());
+        if (esUrgente && process.env.EMAIL_USER) {
           try {
             await enviarNotificacionUrgente(nuevoTicket, null);
             respuesta.notificacionEnviada = true;
