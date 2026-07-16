@@ -54,6 +54,7 @@ async function cargarTickets() {
         <td>${formatoFecha(t.creado)}</td>
         <td>
           <button style="margin:0; padding:6px 10px; font-size:0.78rem;" onclick="ejecutarIA('${t._id}')">🤖 Clasificar</button>
+          <button style="margin:0; padding:6px 10px; font-size:0.78rem; background:transparent; border:1px solid var(--rojo); color:var(--rojo);" onclick="borrarTicket('${t._id}', '${t.titulo.replace(/'/g, "\\'")}')">🗑️ Borrar</button>
         </td>
       </tr>
     `).join('');
@@ -86,6 +87,18 @@ async function ejecutarIA(id) {
     cargarTickets();
   } catch (err) {
     alert('Error: ' + err.message);
+  }
+}
+
+async function borrarTicket(id, titulo) {
+  const confirmado = confirm(`¿Seguro que quieres borrar el ticket "${titulo}"? Esta acción no se puede deshacer.`);
+  if (!confirmado) return;
+
+  try {
+    await eliminarTicket(id);
+    cargarTickets();
+  } catch (err) {
+    alert('Error al borrar: ' + err.message);
   }
 }
 
