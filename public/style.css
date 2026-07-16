@@ -223,8 +223,9 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 
 .usuario-nombre {
-  color: var(--texto-tenue);
+  color: var(--texto);
   font-size: 0.85rem;
+  font-weight: 700;
 }
 
 .btn-salir {
@@ -250,20 +251,33 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .auth-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 480px;
   background: var(--azul-panel);
   border: 1px solid var(--azul-borde);
-  border-radius: 12px;
-  padding: 32px;
+  border-radius: 14px;
+  padding: 44px 40px;
+  font-size: 1.08rem;
 }
 
 .auth-card h1 {
-  font-size: 1.3rem;
+  font-size: 1.7rem;
   text-align: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.auth-card p.subtitulo { text-align: center; font-size: 0.85rem; }
+.auth-card p.subtitulo { text-align: center; font-size: 1rem; }
+
+.auth-card label { font-size: 1rem; }
+
+.auth-card input {
+  font-size: 1.05rem;
+  padding: 12px 14px;
+}
+
+.auth-card button {
+  font-size: 1.05rem;
+  padding: 14px 22px;
+}
 
 .auth-link {
   text-align: center;
@@ -325,14 +339,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   background: var(--azul-noche);
   border: 1px dashed var(--azul-borde);
   border-radius: 4px;
-  padding: 20px 24px;
-  max-width: 460px;
+  padding: 24px 28px;
+  max-width: 520px;
+  font-size: 1.08rem;
 }
 
 .terminal-box .terminal-header {
   color: var(--ambar);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.2rem;
   border-bottom: 1px dashed var(--azul-borde);
   padding-bottom: 12px;
   margin-bottom: 16px;
@@ -341,20 +356,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .terminal-box label {
   font-family: 'Courier New', Courier, monospace;
   color: var(--texto);
-  font-size: 0.9rem;
-  margin-top: 14px;
+  font-size: 1.05rem;
+  margin-top: 16px;
 }
 
 .terminal-box input,
 .terminal-box textarea,
 .terminal-box select {
   font-family: 'Courier New', Courier, monospace;
-  background: transparent;
+  font-size: 1.05rem;
+  background: var(--azul-noche);
   border: none;
   border-bottom: 1px dotted var(--azul-borde);
   border-radius: 0;
-  padding: 6px 2px;
+  padding: 8px 2px;
   color: var(--texto);
+}
+
+.terminal-box select option {
+  background: #ffffff;
+  color: #111111;
+  font-size: 1rem;
 }
 
 .terminal-box input:focus,
@@ -366,6 +388,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .terminal-box button {
   font-family: 'Courier New', Courier, monospace;
+  font-size: 1.05rem;
   width: 100%;
   margin-top: 22px;
 }
